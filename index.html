@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Birthday OS</title>
+        <link rel="stylesheet" href="style.css">
+        <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎂</text></svg>">
+    </head>
+    <body>
+        <header class="site-header">
+            <h1>Birthday OS</h1>
+            <p class="tagline">Keep track of everyone's birthday here.</p>
+        </header>
+
+        <main>
+            <section class="panel hero" id="hero" hidden>
+                <p class="hero-label">Next Up</p>
+                <h2 class="hero-name">Nobody Yet</h2>
+                <p class="hero-date" id="hero-date"></p>
+
+                <p class="hero-note" id="hero-note" aria-live="polite"></p>
+                <div class="countdown" id="countdown" aria-hidden="true">
+                    <div class="countdown-box">
+                        <span id="cd-days">0</span>
+                        <small>days</small>
+                    </div>
+                    <div class="countdown-box">
+                        <span id="cd-hours">0</span>
+                        <small>hours</small>
+                    </div>
+                    <div class="countdown-box">
+                        <span id="cd-minutes">0</span>
+                        <small>mins</small>
+                    </div>
+                    <div class="countdown-box">
+                        <span id="cd-seconds">0</span>
+                        <small>secs</small>
+                    </div>
+                </div>
+
+                <div class="hero-actions">
+                    <button type="button" class="secondary small" id="hero-life-btn">See their life grid</button>
+                </div>
+            </section>
+            <p class="empty" id="empty-state">
+                No birthdays saved yet. Add using form below.
+            </p>
+        </main>
+    </body>
+</html>
