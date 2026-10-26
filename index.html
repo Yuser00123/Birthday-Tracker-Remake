@@ -82,8 +82,65 @@
                 </form>
 
                 <p class="hint">The month and day are what the countdown needs. Add the year too if you want to see ages.</p>
-                
+
+            </section>
+            <section class="panel">
+                <h2>Life in weeks</h2>
+                <p class="hint">
+                    One square is one week. Filled squares are weeks already lived.
+                </p>
+                <label for="life-person">Showing</label>
+                <select id="life-person"></select>
+
+                <p class="life-summary" id="life-summary">Add someone to see their grid</p>
+                <div class="life-grid" id="life-grid"></div>
+
+                <p class="hint">
+                    The grid is 90 years wide. That is about 4,680 weeks, which is a strange and slightly scary thing to look at.
+                </p>
+
+            </section>
+
+            <section class="panel">
+                <h2>Birthday fact</h2>
+                <p class="hint" id="fact-about">Add a birthday and this will tell you something about it.</p>
+
+                <div class="fact-row">
+                    <button type="button" id="fact-btn">Get a fact</button>
+                    <span class="badge" id="fact-source" hidden></span>
+                </div>
+
+                <p class="fact-box" id="fact" aria-live="polite">
+                    Press the button and an AI will write something about that date.
+                </p>
+                <p class="hint" id="fact-note"></p>
+            </section>
+            <section class="panel">
+                <h2>Export your data</h2>
+                <p class="hint" id="storage-hint"></p>
+                <div class="button-row">
+                    <button type="button" class="secondary small" id="export-json">Save a backup</button>
+                    <button type="button" class="secondary small" id="import-btn">Load backup</button>
+                    <button type="button" class="secondary small" id="export-ics">Export .ics</button>
+                </div>
+                <input type="file" id="import-file" accept=".json,application/json" hidden>
+
+                <p class="hint">
+                    The .ics file opens in Google Calendar or Apple Calendar and adds every birthday as a yearly event.
+                </p>
             </section>
         </main>
+
+        <footer class="site-footer">
+            <p>
+                Birthday OS &middot; a remake of
+                <a href="https://github.com/Mustafa2012/Birthday-Tracker">Mustafa2012/Birthday-Tracker</a>
+            </p>
+        </footer>
+        <canvas id="confetti" hidden></canvas>
+
+        <script src="app.js"></script>
+        <script src="dates.js"></script>
+        <script src="ai.js"></script>
     </body>
 </html>
