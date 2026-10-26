@@ -44,6 +44,39 @@
             <p class="empty" id="empty-state">
                 No birthdays saved yet. Add using form below.
             </p>
+
+            <section class="panel">
+                <div class="panel-head">
+                    <h2>Everyone</h2>
+                    <div class="filters">
+                        <input type="search" id="search" placeholder="Search names">
+                        <select id="filter" aria-label="Filter birthdays">
+                            <option value="all">Everyone</option>
+                            <option value="week">Next 7 days</option>
+                            <option value="month">This month</option>
+                        </select>
+                    </div>
+                </div>
+
+                <ul class="people-list" id="people-list"></ul>
+                <p class="hint" id="list-hint"></p>
+            </section>
+
+            <section class="panel">
+                <h2 id="form-title">Add someone</h2>
+                <form id="person-form" novalidate>
+                    <label for="name">Name</label>
+                    <input type="text" id="name" name="name" maxlength="40" placeholder="Ana" autocomplete="off">
+
+                    <label for="birthday">Birthday</label>
+                    <input type="date" id="birthday" name="birthday">
+
+                    <label for="note">Note <span class="optional">(optional)</span></label>
+                    <input type="text" id="note" name="note" maxlength="60" placeholder="School friend" autocomplete="off">
+
+                    <p class="form-error" id="form-error" role="alert"></p>
+                </form>
+            </section>
         </main>
     </body>
 </html>
