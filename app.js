@@ -161,3 +161,134 @@ function renderHero() {
 
     updateCountdown();
 }
+
+function updateCountdown() {
+    const person = findPerson(state.nextUpId);
+    if (!person) return;
+
+    const info = nextBirthdayInfo(person.birthday);
+    if (!info) return;
+
+    const note = $('hero-note');
+    const countdown = $('countdown');
+
+    if (info.isToday) {
+        countdown.hidden = true;
+        note.textContent = 'Today is the day. Happy Birthday, ' + person.name + '!';
+        document.title = 'Happy birthday, ' + person.name + '!';
+        return;
+    }
+
+    countdown.hidden = false;
+    note.textContent = 'Their birthday is on ' + formatDate(info.date) + '.';
+
+    const parts = countdownParts(info);
+    if (!parts) return;
+
+    $('cd-days').textContent = String(parts.days);
+    $("cd-hours").textContent = pad2(parts.hours);
+    $("cd-minutes").textContent = pad2(parts.minutes);
+    $("cd-seconds").textContent = pad2(parts.seconds);
+
+}
+
+function startCountdownTimer() {
+    if (state.countdownTimer) clearInterval(state.countdownTimer);
+    state.countdownTimer = setInterval(updateCountdown, 1000);
+}
+
+function renderList() {
+    const list = $('people-list');
+    const hint = $('list-hint');
+    const searchText = $('search').value.trim().toLowerCase();
+    const filter = $('filter').value;
+
+    list.innerHTML = '';
+
+    const sorted = sortedPeople();
+
+    const visible= sorted.filter(function (entry) {
+        const person = entry.person;
+        if (searchText && person.name.toLowerCase().indexOf(searchText) === -1) {
+            return false;
+        }
+        if (filter === 'week' && entry.info.daysUntil > 7) return false;
+        if (filter === 'month') {
+            const thisMonth = new Date().getMonth();
+            if (entry.info.date.getMonth() !== thisMonth) return false;
+        }
+        return true;
+    });
+
+    if (state.people.length === 0) {
+        hint.textContent = '';
+        return;
+    }
+
+    if (visible.length === 0) {
+        const row = el('li', 'list-empty', 'Nobody matches that search or filter.');
+        list.appendChild(row);
+        hint.textContent = '';
+    }
+
+    visible.forEach(function (entry) {
+        list.appendChild(buildPersonRow(entry));
+    });
+
+    hint.textContent = 'Showing' + visible.length + ' of ' + state.people.length + (state.people.length === 1 ? 'person.' : 'people.');
+}
+
+function buildPersonRow(entry) {
+    const person = entry.person;
+    const info = entry.info;
+
+    const row = el('li', 'person');
+    if (info.isToday) row.classList.add('is-today');
+
+    const main = el('div', 'person-name');
+    const avatar = el('span', 'avatar', person.name.trim().charAt(0).toUpperCase() || '?');
+    avatar.style.backgroundColor = avatarColor(person.name);
+    main.appendChild(avatar);
+
+    const text = el('div', 'person-text');
+    const nameLine = el('p', 'person-name', person.name);
+
+    if (ageLabel(info)) {
+        nameLine.appendChild(el('span', 'tag', ageLabel(info)));
+    }
+    if (info.isToday) {
+        nameLine.appendChild(el('span', 'tag tag-todya', 'today'));
+    }
+    text.appendChild(nameLine);
+
+    const dateLine = el('p', 'person-date', formatShortDate(info.date) + ' \u00b7 ' + humanDays(info.daysUntil));
+
+    if (person.note) {
+        dateLine.textContent += " \u00b7 " + person.note;
+    }
+    text.appendChild(dateLine);
+    main.appendChild(text);
+    row.appendChild(main);
+
+    const actions = el('div', 'person-actions');
+    const showBtn = el('button', 'link-button', 'Show');
+    showBtn.type = 'button';
+    showBtn.dataset.action = 'show';
+    showBtn.dataset.id = person.id;
+    actions.appendChild(showBtn);
+
+    const editBtn = el('button', 'link-button', 'Edit');
+    editBtn.type = 'button';
+    editBtn.dataset.action = 'edit';
+    editBtn.dataset.id = person.id;
+    actions.appendChild(editBtn);
+
+    const deleteBtn = el('button', 'link-button danger', 'Delete');
+    deleteBtn.type = 'button';
+    deleteBtn.dataset.action = 'delete';
+    deleteBtn.dataset.id = person.id;
+    actions.appendChild(deleteBtn);
+
+    row.appendChild(actions);
+    return row;
+}
