@@ -292,3 +292,93 @@ function buildPersonRow(entry) {
     row.appendChild(actions);
     return row;
 }
+
+function renderLifeSelect() {
+    const select = $('life-person');
+    const sorted = sortedPeople();
+
+    select.innerHTML = '';
+
+    if (sorted.length === 0) {
+        select.disabled = true;
+        select.appendChild(el('option', '', 'Nobody added yet'));
+        state.selectedId = null;
+        return;
+    }
+
+    select.disabled = false;
+
+    sorted.forEach(function (entry) {
+        const option = el('option', '', entry.person.name);
+        option.value = entry.person.id;
+        select.appendChild(option);
+    });
+
+    const stillThere = sorted.some(function (entry) {
+        return entry.person.id === state.selectedId;
+    });
+    if (!stillThere) state.selectedId = sorted[0].person.id;
+    select.value = state.selectedId;
+}
+
+function renderLifeGrid() {
+    const grid = $('life-grid');
+    const summary = $('life-summary');
+
+    grid.innerHTML = '';
+
+    const person = findPerson($('life-person').value);
+    if (!person) {
+        summary.textContent = 'Add someone to see their grid.';
+        return;
+    }
+    
+    const born = parseISODate(person.birthday);
+    if (!born) {
+        summary.textContent = 'That birthday could not be read.';
+        return;
+    }
+
+    const weeks = weeksLived(person.birthday);
+    const totalWeeks = GRID_YEARS * WEEKS_PER_YEAR;
+    const dayOfWeek = new Date(born.year, born.month - 1, born.day).toLocaleDateString(undefined, { weekday: 'long'});
+
+    summary.textContent = person.name + ' has been alive for ' + weeks + ' weeks (' + (weeks * 7).toLocaleString() + ' days). Born on a ' + dayOfWeek + '.';
+
+    const fragment = document.createDocumentFragment();
+
+    for (let week = 0; week < totalWeeks; week++) {
+        const square = document.createElement("span");
+        square.className = week < weeks ? "week lived" : "week";
+
+        if (week % WEEKS_PER_YEAR === 0) {
+            square.classList.add("year-start");
+            square.title = 'Age ' + (week / WEEKS_PER_YEAR);
+        } else {
+            square.title = 'Week ' + (week + 1);
+        }
+
+        fragment.appendChild(square);
+    }
+    grid.appendChild(fragment);
+}
+
+function renderAll() {
+    renderHero();
+    renderList();
+    renderLifeSelect();
+    renderLifeGrid();
+    renderFactAbout();
+    renderStorageHint();
+}
+
+function renderFactAbout() {
+    const person = findPerson(state.selectedId);
+    const about = $('fact-about');
+
+    if (!person) {
+        about.textContent = 'Add a birthday and this will tell you something about it.';
+        return;
+    }
+    about.textContent = 'About ' + person.name + "'s birthday.";
+}
