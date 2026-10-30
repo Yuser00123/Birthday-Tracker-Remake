@@ -766,3 +766,66 @@ function launchConfetti() {
     requestAnimationFrame(frame);
 }
 
+function wireUpEvents() {
+    $('person-form').addEventListener('submit', handleSubmit);
+    $('cancel-edit').addEventListener('click', function () {
+        clearForm();
+    });
+
+    $('people-list').addEventListener('click', handleListClick);
+    $('search').addEventListener('input', renderList);
+    $('filter').addEventListener('change', renderList);
+    $('life-person').addEventListener('change', function () {
+        state.selectedId = $('life-person').value;
+        renderLifeGrid();
+        renderFactAbout();
+    });
+    
+    $('fact-btn').addEventListener('click', handleFactClick);
+
+    $('export-json').addEventListener('click', exportJson);
+    $('export-ics').addEventListener('click', exportIcs);
+
+    $('import-btn').addEventListener('click', function () {
+        $('import-file').click();
+    });
+
+    $('import-file').addEventListener('change', function () {
+        const file = event.target.files[0];
+        if (file) importJson(file);
+        event.target.value = '';
+    });
+
+    $('hero-life-btn').addEventListener('click', function () {
+        const person = findPerson(state.nextUpId);
+        if (!person) return;
+        state.selectedId = person.id;
+        renderAll();
+        $('life-person').scrollIntoView({ behavior: 'smooth', block: 'center' });
+    });
+    window.addEventListener('resize', function () {
+        if (!confettiCanvas.hidden) resizeConfettiCanvas();
+    });
+
+    document.addEventListener('visibilitychange', function () {
+        if (!document.hidden) updateCountdown();
+    });
+}
+
+function start() {
+    wireUpEvents();
+    renderAll();
+    startCountdownTimer();
+
+    const anyoneToday = sortedPeople().some(function (entry) {
+        return entry.info.isToday;
+    });
+    if (anyoneToday) launchConfetti();
+
+    if (state.people.length === 0) {
+        console.log('Birthday OS: no people saved yet. After you add one, look at', JSON.stringify(loadPeople(), null, 2));
+    }
+}
+
+start();
+
