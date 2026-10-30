@@ -497,3 +497,171 @@ function startEditing(id) {
     $('name').focus();
 }
 
+function deletePerson(id) {
+    const person = findPerson(id);
+    if (!person) return;
+
+    const sure = confirm('Delete ' + person.name + "'s birthday? This cannot be undone.");
+    if (!sure) return;
+
+    state.people = state.people.filter(function (other) {
+        return other.id !== id;
+    });
+    if (state.editingId === id) clearForm();
+    if (state.selectedId === id) state.selectedId = null;
+
+    commit();
+}
+
+function handleListClick(event) {
+    const button = event.target.closest('button[data-action]');
+    if (!button) return;
+
+    const id = button.dataset.id;
+
+    if (button.dataset.action === 'delete') deletePerson(id);
+    if (button.dataset.action === 'edit') startEditing(id);
+
+    if (button.dataset.action === 'show') {
+        state.selectedId = id;
+        renderAll();
+        $('life-person').scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+}
+
+function showFactText(text, sourceLabel, note) {
+    $('fact').textContent = text;
+
+    const badge = $('fact-source');
+    if (sourceLabel) {
+        badge.textContent = sourceLabel;
+        badge.hidden = false;
+    } else {
+        badge.hidden = true;
+    }
+
+    $('fact-note').textContent = note || '';
+
+}
+
+function pickBuiltInFact(avoid) {
+    let fact = BUILT_IN_FACTS[Math.floor(Math.random() * BUILT_IN_FACTS.length)];
+    let tries = 0;
+
+    while (fact === avoid && tries < 10) {
+        fact = BUILT_IN_FACTS[Math.floor(Math.random() * BUILT_IN_FACTS.length)];
+        tries++;
+    }
+    return fact;
+}
+
+async function handleFactClick() {
+    const person = findPerson(state.selectedId);
+    const button = $('fact-button');
+
+    if (!person) {
+        showFactText('Add a birthday first, then I can tell you something about it.', null, '');
+        return;
+    }
+
+    const info = nextBirthdayInfo(person.birthday);
+    if (!info) return;
+
+    const cacheKey = person.id + '|' + info.date.toDateString();
+    button.disabled = true;
+    button.textContent = 'Thinking...';
+    showFactText('Asking the AI for something about this date...', 'working', '');
+
+    const prompt = buildFactPrompt(
+        state.aiFactsUsed,
+        monthName(info.date),
+        info.bornOn.day,
+        info.turningAge > 0 ? info.turningAge : 0
+    );
+
+    try {
+        const fact = await askForFact(prompt);
+        state.aiFactsUsed.unshift(fact);
+        state.factCache[cacheKey] = fact;
+        showFactText(fact, 'from the AI', '');
+    } catch (error) {
+        const cached = state.factCache[cacheKey];
+
+        if (cached) {
+            showFactText(cached, 'from the AI, earlier', 'The AI is busy right now (' + error.message + '), so here is the one it gave earlier.');
+        } else {
+            showFactText(pickBuiltInFact($('fact').textContent), 'built-in fact', 'The AI did not answer (' + error.message + '), so here is one from my own list.');
+        }
+
+        console.warn('AI fact failed:', error.message);
+    } finally {
+        button.disabled = false;
+        button.textContent = 'Get another fact';
+    }
+}
+
+function downloadFile(filename, text, type) {
+    const blob = new Blob([text], { type: type });
+    const url = URL.createObjectURL(blob);
+
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+
+    setTimeout(function () {
+        URL.revokeObjectURL(url);
+    }, 1000);
+}
+
+function exportJson() {
+    const data = {
+        app: 'Birthday OS',
+        version: 1,
+        exportedOn: new Date().toISOString(),
+        people: state.people
+    };
+
+    downloadFile('birthdays-backup.json', JSON.stringify(data, null, 2), 'application/json');
+}
+
+function importJson(file) {
+    const reader = new FileReader();
+    reader.onload = function () {
+        try {
+            const data = JSON.parse(String(reader.result));
+            const incoming = Array.isArray(data) ? data : data.people;
+
+            if (!Array.isArray(incoming)) {
+                alert('That file does not look like a Birthday OS backup.');
+                return;
+            }
+            let added = 0;
+            incoming.forEach(function (raw) {
+                if (!raw || typeof raw.name !== 'string' || !parseISODate(raw.birthday)) return;
+
+                const duplicate = state.people.some(function (person) {
+                    return person.name.toLowerCase() === raw.name.toLowerCase() && person.birthday === raw.birthday;
+                });
+                if (duplicate) return;
+
+                state.people.push({
+                    id: makeId(),
+                    name: raw.name.slice(0, 40),
+                    birthday: raw.birthday,
+                    note: typeof raw.note === 'string' ? raw.note.slice(0, 60) : "",
+                    addedOn: new Date().toISOString()
+                });
+                added++;
+            });
+            commit();
+            alert(added === 0 ? 'Nothing new in that file.' : 'Added ' + added + (added === 1 ? ' birthday.' : ' birthdays.'));
+        } catch (error) {
+            alert('I could not read that file. ' + error.message);
+        }
+    };
+    reader.readAsText(file);
+}
+
