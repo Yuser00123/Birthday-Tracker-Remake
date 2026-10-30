@@ -382,3 +382,118 @@ function renderFactAbout() {
     }
     about.textContent = 'About ' + person.name + "'s birthday.";
 }
+
+function renderStorageHint() {
+    const hint = $('storage-hint');
+    const count = state.people.length;
+
+    if (count === 0) {
+        hint.textContent = 'Nothing saved yet. Everything you add stays in this browser only.';
+        return;
+    }
+    hint.textContent = count + (count === 1 ? ' person is ' : ' people are') + " saved in this browser's localStorage. Clearing site data will delete them, so take a backup now and then.";
+
+}
+
+function commit() {
+    savePeople(state.people);
+    renderAll();
+}
+
+function showFormError(message) {
+    $('form-error').textContent = message;
+}
+
+function clearForm() {
+    $('name').value = '';
+    $('birthday').value = '';
+    $('note').value = '';
+    showFormError('');
+    state.editingId = null;
+    $('form-title').textContent = 'Add someone';
+    $('submit-btn').textContent = 'Add birthday';
+    $('cancel-edit').hidden = true;
+}
+
+function handleSubmit(event) {
+    event.preventDefault();
+    showFormError('');
+
+    const name = $('name').value.trim();
+    const birthday = $('birthday').value;
+    const note = $('note').value.trim();
+
+    if (!name) {
+        showFormError('Please write a name.');
+        $('name').focus();
+        return;
+    }
+
+    if (!birthday) {
+        showFormError('Please pick your birthday.');
+        $('birthday').focus();
+        return;
+    }
+
+    if (!parseISODate(birthday)) {
+        showFormError('That date does not look right. Try a year between 1900 and 2200.');
+        return;
+    }
+
+    const alreadyThere = state.people.some(function (person) {
+        return person.name.toLowerCase() === name.toLowerCase()  && person.birthday === birthday && person.id !== state.editingId;
+    });
+
+    if (alreadyThere) {
+        showFormError('That birthday is already saved for ' + name + '.');
+        return;
+    }
+
+    if (state.editingId) {
+        const person = findPerson(state.editingId);
+        if (person) {
+            person.name = name;
+            person.birthday = birthday;
+            person.note = note;
+        }
+        state.selectedId = state.editingId;
+    } else {
+        const person = {
+            id: makeId(),
+            name: name,
+            birthday: birthday,
+            note: note,
+            addedOn: new Date().toISOString()
+        };
+        state.people.push(person);
+        state.selectedId = person.id;
+    }
+
+    const wasEditing = state.editingId !== null;
+    const info = nextBirthdayInfo(birthday);
+
+    clearForm();
+    commit();
+
+    if (info && info.isToday && !wasEditing) {
+        launchConfetti();
+    }
+}
+
+function startEditing(id) {
+    const person = findPerson(id);
+    if (!person) return;
+
+    state.editingId = person.id;
+
+    $('name').value = person.name;
+    $('birthday').value = person.birthday;
+    $('note').value = person.note || '';
+    $('form-title').textContent = 'Editing ' + person.name;
+    $('submit-btn').textContent = 'Save changes';
+    $('cancel-edit').hidden = false;
+    showFormError('');
+    $('for-title').scrollIntoView( { behaviour: 'smooth', block: 'center'});
+    $('name').focus();
+}
+
