@@ -665,3 +665,104 @@ function importJson(file) {
     reader.readAsText(file);
 }
 
+function exportIcs() {
+    if (state.people.length === 0) {
+        alert('There is nothing to export yet.');
+        return;
+    }
+
+    const now = new Date();
+    const stamp = now.getUTCFullYear() + pad2(now.getUTCMonth() + 1) + pad2(now.getUTCDate()) + "T" + pad2(now.getUTCHours()) + pad2(now.getUTCMinutes()) + pad2(now.getUTCSeconds()) + 'Z';
+    const lines = [
+        'BEGIN:VCALANDER',
+        'VERSION:2.0',
+        'PRODID:-//Birthday OS//EN',
+        'CALSCALE:GREGORIAN'
+    ];
+
+    state.people.forEach(function (person) {
+        const born = parseISODate(person.birthday);
+        if (!born) return;
+
+        lines.push('BEGIN:VEVENT');
+        lines.push('UID:' + person.id + '@birthday-os');
+        lines.push('DTSTAMP:' + stamp);
+        lines.push('DTSTART;VALUE=DATE:' + born.year + pad2(born.month) + pad2(born.day));
+        lines.push('RRULE:FREQ=YEARLY');
+        lines.push('SUMMARY:' + person.name + "'s birthday");
+        if (person.note) lines.push('DESCRIPTION:' + person.note);
+        lines.push('END:VEVENT');
+    });
+    lines.push('END:VCALANDER');
+    downloadFile('birthdays.ics', lines.join('\r\n'), 'text/calender');
+}
+
+const confettiCanvas = $('confetti');
+const confettiCtx = confettiCanvas.getContext('2d');
+
+const CONFETTI_COLORS = ['#e0653f', '#f0b429', '#2f9e8f', '#3f7fe0', '#c2557f'];
+let confettiRunning = false;
+
+function resizeConfettiCanvas() {
+    const ratio = wimdow.devicePixelRatio || 1;
+    confettiCanvas.width = Math.floor(window.innerWidth * ratio);
+    confettiCanvas.height = Math.floor(window.innerHeight * ratio);
+    confettiCtx.setTransform(ratio, 0, 0, ratio, 0, 0);
+}
+
+function launchConfetti() {
+    if (confettiRunning) return;
+
+    confettiRunning = true;
+    confettiCanvas.hidden = false;
+    resizeConfettiCanvas();
+
+    const pieces = [];
+    const width = window.innerWidth;
+    for (let i = 0; i < 120; i++) {
+        pieces.push({
+            x: Math.random() * width,
+            y: -Math.random() * window.innerHeight,
+            size: 4 + Math.random() * 6,
+            speedY: 2 + Math.random() * 3,
+            speedX: Math.random() * 1.6 - 0.8,
+            rotation: Math.random() * 360,
+            spin: Math.random() * 8 - 4,
+            color: CONFETTI_COLORS[Math.floor(Math.random() * CONFETTI_COLORS.length)]
+        });
+    }
+
+    const startedAt = Date.now();
+
+    function frame() {
+        confettiCtx.clearRect(0, 0, window.innerWidth, window.innerHeight);
+
+        pieces.forEach(function (piece) {
+            piece.y += piece.speedY;
+            piece.x += piece.speedX;
+            piece.rotation += piece.spin;
+
+            if (piece.y > window.innerHeight + 20) {
+                piece.y = -20;
+                piece.x = Math.random() * window.innerWidth;
+            }
+
+            confettiCtx.save();
+            confettiCtx.translate(piece.x, piece.y);
+            confettiCtx.rotate((piece.rotation * Math.PI) / 180);
+            confettiCtx.fillStyle = piece.color;
+            confettiCtx.fillRect(-piece.size / 2, -piece.size / 2, piece.size, piece.size);
+            confettiCtx.restore();
+        });
+
+        if (Date.now() - startedAt > 4500) {
+            confettiCtx.clearRect(0, 0, window.innerWidth, window.innerHeight);
+            confettiCanvas.hidden = true;
+            confettiRunning = false;
+            return;
+        }
+        requestAnimationFrame(frame);
+    }
+    requestAnimationFrame(frame);
+}
+
