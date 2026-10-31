@@ -137,7 +137,7 @@ function findPerson(id) {
 }
 
 function renderHero() {
-    dcument.title = 'Birthday OS';
+    document.title = 'Birthday OS';
     const hero = $("hero");
     const emptyState = $("empty-state");
     const sorted = sortedPeople();
@@ -181,7 +181,7 @@ function updateCountdown() {
     }
 
     countdown.hidden = false;
-    note.textContent = 'Their birthday is on ' + formatDate(info.date) + '.';
+    const noteText = 'Their birthday is on ' + formatDate(info.date) + '.';
     if (note.textContent !== noteText) note.textContent = noteText;
 
     const parts = countdownParts(info);
