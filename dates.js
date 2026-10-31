@@ -27,7 +27,7 @@ var BirthdayDates = (function () {
         if (month < 1 || month > 12) return null;
         if (day < 1 || day > daysInMonth(year, month)) return null;
 
-        return { year: year, month: month, day: day};
+        return { year: year, month: month, day: day };
     }
 
     function atNoon(year, month, day) {

@@ -137,6 +137,7 @@ function findPerson(id) {
 }
 
 function renderHero() {
+    dcument.title = 'Birthday OS';
     const hero = $("hero");
     const emptyState = $("empty-state");
     const sorted = sortedPeople();
@@ -181,6 +182,7 @@ function updateCountdown() {
 
     countdown.hidden = false;
     note.textContent = 'Their birthday is on ' + formatDate(info.date) + '.';
+    if (note.textContent !== noteText) note.textContent = noteText;
 
     const parts = countdownParts(info);
     if (!parts) return;
@@ -229,6 +231,7 @@ function renderList() {
         const row = el('li', 'list-empty', 'Nobody matches that search or filter.');
         list.appendChild(row);
         hint.textContent = '';
+        return;
     }
 
     visible.forEach(function (entry) {
@@ -245,7 +248,7 @@ function buildPersonRow(entry) {
     const row = el('li', 'person');
     if (info.isToday) row.classList.add('is-today');
 
-    const main = el('div', 'person-name');
+    const main = el('div', 'person-main');
     const avatar = el('span', 'avatar', person.name.trim().charAt(0).toUpperCase() || '?');
     avatar.style.backgroundColor = avatarColor(person.name);
     main.appendChild(avatar);
@@ -665,6 +668,14 @@ function importJson(file) {
     reader.readAsText(file);
 }
 
+function escapeIcs(text) {
+    return String(text)
+        .replace(/\\/g, '\\\\')
+        .replace(/;/g, '\\;')
+        .replace(/,/g, '\\,')
+        .replace(/\r?\n/g, '\\n');
+}
+
 function exportIcs() {
     if (state.people.length === 0) {
         alert('There is nothing to export yet.');
@@ -689,8 +700,8 @@ function exportIcs() {
         lines.push('DTSTAMP:' + stamp);
         lines.push('DTSTART;VALUE=DATE:' + born.year + pad2(born.month) + pad2(born.day));
         lines.push('RRULE:FREQ=YEARLY');
-        lines.push('SUMMARY:' + person.name + "'s birthday");
-        if (person.note) lines.push('DESCRIPTION:' + person.note);
+        lines.push('SUMMARY:' + escapeIcs(person.name + "'s birthday"));
+        if (person.note) lines.push('DESCRIPTION:' + escapeIcs(person.note));
         lines.push('END:VEVENT');
     });
     lines.push('END:VCALENDAR');

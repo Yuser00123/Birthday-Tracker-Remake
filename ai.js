@@ -1,7 +1,7 @@
 var BirthdayAI = (function () {
     'use strict';
 
-    var ENDPOINT = 'https://text.pollination.ai/';
+    var ENDPOINT = 'https://text.pollinations.ai/';
     var MODEL = 'openai';
     var TIMEOUT_MS = 15000;
     var MAX_OLD_FACTS = 8;
@@ -76,7 +76,7 @@ var BirthdayAI = (function () {
             }
 
             var fact = cleanFact(body);
-            if (!fact) throw new Error('the reply came back early');
+            if (!fact) throw new Error('the reply came back empty');
             return fact;
         } catch (error) {
             if (error.name === 'AbortError') {
