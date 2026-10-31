@@ -20,7 +20,7 @@ var BirthdayDates = (function () {
 
         var year = Number(parts[0]);
         var month = Number(parts[1]);
-        var day = Numbers([2]);
+        var day = Number(parts[2]);
 
         if (!Number.isInteger(year) || !Number.isInteger(month) || !Number.isInteger(day)) return null;
         if (year < 1900 || year > 2200) return null;
@@ -88,7 +88,7 @@ var BirthdayDates = (function () {
     }
 
     function formatDate(date) {
-        return date.toLocalDateString(undefined, {
+        return date.toLocaleDateString(undefined, {
             weeday: 'long',
             day: 'numeric',
             month: 'long',

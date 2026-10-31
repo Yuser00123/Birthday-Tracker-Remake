@@ -40,7 +40,7 @@ function savePeople(people) {
 }
 
 function makeId() {
-    return "p" + Date.now().toString(36) + Maths.random().toString(36).slice(2, 6);
+    return "p" + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
 }
 
 const state = {
@@ -108,7 +108,7 @@ function pad2(number) {
 function ageLabel(info) {
     if (!info) return "";
     if (info.turningAge <= 0) return "";
-    return "turns" + info.turningAge;
+    return "turns " + info.turningAge;
 }
 
 function sortedPeople() {
@@ -235,7 +235,7 @@ function renderList() {
         list.appendChild(buildPersonRow(entry));
     });
 
-    hint.textContent = 'Showing' + visible.length + ' of ' + state.people.length + (state.people.length === 1 ? 'person.' : 'people.');
+    hint.textContent = 'Showing ' + visible.length + ' of ' + state.people.length + (state.people.length === 1 ? ' person.' : ' people.');
 }
 
 function buildPersonRow(entry) {
@@ -257,7 +257,7 @@ function buildPersonRow(entry) {
         nameLine.appendChild(el('span', 'tag', ageLabel(info)));
     }
     if (info.isToday) {
-        nameLine.appendChild(el('span', 'tag tag-todya', 'today'));
+        nameLine.appendChild(el('span', 'tag tag-today', 'today'));
     }
     text.appendChild(nameLine);
 
@@ -493,7 +493,7 @@ function startEditing(id) {
     $('submit-btn').textContent = 'Save changes';
     $('cancel-edit').hidden = false;
     showFormError('');
-    $('for-title').scrollIntoView( { behaviour: 'smooth', block: 'center'});
+    $('form-title').scrollIntoView( { behavior: 'smooth', block: 'center'});
     $('name').focus();
 }
 
@@ -557,7 +557,7 @@ function pickBuiltInFact(avoid) {
 
 async function handleFactClick() {
     const person = findPerson(state.selectedId);
-    const button = $('fact-button');
+    const button = $('fact-btn');
 
     if (!person) {
         showFactText('Add a birthday first, then I can tell you something about it.', null, '');
@@ -674,7 +674,7 @@ function exportIcs() {
     const now = new Date();
     const stamp = now.getUTCFullYear() + pad2(now.getUTCMonth() + 1) + pad2(now.getUTCDate()) + "T" + pad2(now.getUTCHours()) + pad2(now.getUTCMinutes()) + pad2(now.getUTCSeconds()) + 'Z';
     const lines = [
-        'BEGIN:VCALANDER',
+        'BEGIN:VCALANDAR',
         'VERSION:2.0',
         'PRODID:-//Birthday OS//EN',
         'CALSCALE:GREGORIAN'
@@ -693,8 +693,8 @@ function exportIcs() {
         if (person.note) lines.push('DESCRIPTION:' + person.note);
         lines.push('END:VEVENT');
     });
-    lines.push('END:VCALANDER');
-    downloadFile('birthdays.ics', lines.join('\r\n'), 'text/calender');
+    lines.push('END:VCALANDAR');
+    downloadFile('birthdays.ics', lines.join('\r\n'), 'text/calendar');
 }
 
 const confettiCanvas = $('confetti');
@@ -704,7 +704,7 @@ const CONFETTI_COLORS = ['#e0653f', '#f0b429', '#2f9e8f', '#3f7fe0', '#c2557f'];
 let confettiRunning = false;
 
 function resizeConfettiCanvas() {
-    const ratio = wimdow.devicePixelRatio || 1;
+    const ratio = window.devicePixelRatio || 1;
     confettiCanvas.width = Math.floor(window.innerWidth * ratio);
     confettiCanvas.height = Math.floor(window.innerHeight * ratio);
     confettiCtx.setTransform(ratio, 0, 0, ratio, 0, 0);
@@ -790,7 +790,7 @@ function wireUpEvents() {
         $('import-file').click();
     });
 
-    $('import-file').addEventListener('change', function () {
+    $('import-file').addEventListener('change', function (event) {
         const file = event.target.files[0];
         if (file) importJson(file);
         event.target.value = '';
