@@ -674,7 +674,7 @@ function exportIcs() {
     const now = new Date();
     const stamp = now.getUTCFullYear() + pad2(now.getUTCMonth() + 1) + pad2(now.getUTCDate()) + "T" + pad2(now.getUTCHours()) + pad2(now.getUTCMinutes()) + pad2(now.getUTCSeconds()) + 'Z';
     const lines = [
-        'BEGIN:VCALANDAR',
+        'BEGIN:VCALENDAR',
         'VERSION:2.0',
         'PRODID:-//Birthday OS//EN',
         'CALSCALE:GREGORIAN'
@@ -693,7 +693,7 @@ function exportIcs() {
         if (person.note) lines.push('DESCRIPTION:' + person.note);
         lines.push('END:VEVENT');
     });
-    lines.push('END:VCALANDAR');
+    lines.push('END:VCALENDAR');
     downloadFile('birthdays.ics', lines.join('\r\n'), 'text/calendar');
 }
 

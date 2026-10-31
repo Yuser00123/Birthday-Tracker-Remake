@@ -89,7 +89,7 @@ var BirthdayDates = (function () {
 
     function formatDate(date) {
         return date.toLocaleDateString(undefined, {
-            weeday: 'long',
+            weekday: 'long',
             day: 'numeric',
             month: 'long',
             year: 'numeric'
